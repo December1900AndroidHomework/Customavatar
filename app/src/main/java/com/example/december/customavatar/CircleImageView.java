@@ -67,8 +67,31 @@ public class CircleImageView extends ImageView {
            //计算显示圆形的半径
            int radius = (getDefalutWidth < getDefalutHeight ? getDefalutWidth : getDefalutHeight) / 2 ;
            //获取处理后的圆形图片
-           Bitmap roundBitmap
-
+           Bitmap roundBitmap = getCroppedRoundBitmap(bitmap, radius);
+           //绘制图片进行显示
+           canvas.drawBitmap(roundBitmap, getDefalutWidth / 2 - radius, getDefalutHeight / 2 - radius, null);
        }
+
+    /**
+     * 获取剪裁后的圆形图片
+     * radius 半径
+     */
+
+    private  Bitmap getCroppedRoundBitmap(Bitmap bmp,int radius){
+        Bitmap scaledbitmap;
+        int diameter = radius * 2;
+        //对图片处理，获取我们需要的中央部分
+        Bitmap circlebitmap = getCenterBitmap(bmp);
+        //缩放图片
+        //创建一个输出的对应
+        Bitmap output = Bitmap.createBitmap(scaledbitmap.getWidth(),scaledbitmap.getHeight(), Bitmap.Config.ARGB_8888);
+
+    }
+    /**
+     * 截取图片
+     */
+    private Bitmap getCenterBitmap(Bitmap bitmap){
+        return bitmap;
+    }
 
 }
