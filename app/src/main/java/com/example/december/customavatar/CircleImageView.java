@@ -1,9 +1,13 @@
 package com.example.december.customavatar;
 
+import android.app.Activity;
 import android.content.Context;
+import android.gesture.GestureOverlayView;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.ColorFilter;
+import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -14,6 +18,8 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.AttributeSet;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -21,7 +27,7 @@ import android.widget.ImageView;
 
 import java.util.jar.Attributes;
 
-public class CircleImageView extends ImageView {
+public class CircleImageView extends ImageView  {
     private int getDefalutWidth = 100;
     private int getDefalutHeight = 100;
     private Paint paint;
@@ -71,21 +77,52 @@ public class CircleImageView extends ImageView {
            //绘制图片进行显示
            canvas.drawBitmap(roundBitmap, getDefalutWidth / 2 - radius, getDefalutHeight / 2 - radius, null);
        }
+        public class CircleImageView extends Activity implements GestureDetector.OnGestureListener{
+            GestureDetector detector;
+            ImageView imageView;
+            Bitmap bitmap1;
+            int width, height;
+            float currentSclae = 1;
+            Matrix matrix
+            @Override
+            public void onCreate(Bundle savedInstanceState) {
+                super.onCreate(savedInstanceState);
+                setContentView(R.layout.content_circle_image_view);
+                //创建手势检测器
+                detector = new GestureDetector(this, this);
+                imageView = (ImageView) findViewById(R.id.show);
+                matrix = new Matrix();
+                //获取被缩放的源图片
+                bitmap1 = BitmapFactory.decodeResource(this.getResources(), R.drawable.show);
+                width = bitmap1.getWidth();
+                height = bitmap1.getHeight();
+                imageView.setImageBitmap(BitmapFactory.decodeResource(this.getResources(),
+                        R.drawable.show));
+            }
+            @Override
+            public boolean onTouchEvent(MotionEvent me)
+            {
+                //将该Activity上的触摸事件交给GestureDetector处理
+                return detector.onTouchEvent(me);
+
+            }
+
+
+            }
+        }
 
     /**
      * 获取剪裁后的圆形图片
      * radius 半径
      */
-
-    private  Bitmap getCroppedRoundBitmap(Bitmap bmp,int radius){
+    private  Bitmap getCroppedRoundBitmap(Bitmap bmp,int radius) {
         Bitmap scaledbitmap;
         int diameter = radius * 2;
         //对图片处理，获取我们需要的中央部分
         Bitmap circlebitmap = getCenterBitmap(bmp);
         //缩放图片
         //创建一个输出的对应
-        Bitmap output = Bitmap.createBitmap(scaledbitmap.getWidth(),scaledbitmap.getHeight(), Bitmap.Config.ARGB_8888);
-
+        Bitmap output = Bitmap.createBitmap(scaledbitmap.getWidth(), scaledbitmap.getHeight(), Bitmap.Config.ARGB_8888);
     }
     /**
      * 截取图片
