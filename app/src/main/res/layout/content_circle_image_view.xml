@@ -15,6 +15,7 @@
         android:padding="@dimen/fab_margin"
         >
       <com.example.december.customavatar.CircleImageView
+          android:id="@+id/show"
           android:layout_width="160dp"
           android:layout_height="160dp"
           android:src="@drawable/show"

@@ -15,6 +15,7 @@ import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Rect;
+import android.graphics.RectF;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.NinePatchDrawable;
@@ -38,6 +39,13 @@ public class CircleImageView extends ImageView {
     private int getDefalutWidth = 100;
     private int getDefalutHeight = 100;
     private Paint paint;
+    private Context mContext;
+    private int defaultColor = 0xFFFFFFFF;
+    // 边框的颜色
+    private int mBordeColor = 0;
+    //边框的宽度
+    private int mBorderWidth = 0;
+
 
     public CircleImageView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -83,7 +91,7 @@ public class CircleImageView extends ImageView {
         //计算显示圆形的半径
         int radius = (getDefalutWidth < getDefalutHeight ? getDefalutWidth : getDefalutHeight) / 2;
         //获取处理后的圆形图片
-        Bitmap roundBitmap = getCroppedRoundBitmap(bitmap, radius);
+        Bitmap roundBitmap = getCroppedRoundBitmap(bitmap);
         //绘制图片进行显示
         canvas.drawBitmap(roundBitmap, getDefalutWidth / 2 - radius, getDefalutHeight / 2 - radius, null);
     }
@@ -92,86 +100,57 @@ public class CircleImageView extends ImageView {
      * 获取剪裁后的圆形图片
      * radius 半径
      */
-    public Bitmap getCroppedRoundBitmap(Bitmap bmp, int radius) {
-        Bitmap scaledSrcBmp;
-        int diameter = radius * 2;
-        //对图片进行处理，获取我们需要的中央部分
-        Bitmap squareBitmap = getCenterBitmap(bmp);
-        //将图片缩放到需要的圆形比例大小
-        if (squareBitmap.getWidth() != diameter || squareBitmap.getHeight() != diameter) {
-            scaledSrcBmp = Bitmap.createScaledBitmap(squareBitmap, diameter, diameter, true);
-        } else {
-            scaledSrcBmp = squareBitmap;
-        }
+    public Bitmap getCroppedRoundBitmap(Bitmap bmp) {
+        int width = bmp.getWidth();
+        int height = bmp.getHeight();
+        int radius = width;
         //创建一个我们输出的对应
-        Bitmap output = Bitmap.createBitmap(scaledSrcBmp.getWidth(),
-                scaledSrcBmp.getHeight(),
-                Bitmap.Config.ARGB_8888);
+        Bitmap output = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
         //在output上进行绘画
         Canvas canvas = new Canvas(output);
         //创建裁剪的矩形
-        Rect rect = new Rect(0, 0, scaledSrcBmp.getWidth(), scaledSrcBmp.getHeight());
+        RectF rect = new RectF(0, 0, radius,radius);
         //绘制dest目标区域
-        canvas.drawCircle(scaledSrcBmp.getWidth() / 2,
-                scaledSrcBmp.getHeight() / 2,
-                scaledSrcBmp.getWidth() / 2,
-                paint);
+        canvas.drawRoundRect(rect,radius/2,radius/2,paint);
         //设置Xfermode模式
         paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.SRC_IN));
         //绘制src源区域
-        canvas.drawBitmap(scaledSrcBmp, rect, rect, paint);
+        canvas.drawBitmap(bmp, null, rect, paint);
         bmp.recycle();
-        squareBitmap.recycle();
-        scaledSrcBmp.recycle();
         return output;
 
     }
 
-    /**
-     * 截取图片
+      /**
+     * 获取自定义属性
      */
-    private Bitmap getCenterBitmap(Bitmap bitmap) {
-        return bitmap;
-    }
-
-            private Context mContext;
-            private int defaultColor = 0xFFFFFFFF;
-            // 边框的颜色
-            private int mBordeColor = 0;
-            //边框的宽度
-            private int mBorderWidth = 0;
-
-            /*
-             * 获取自定义属性
-             */
-            private void setCustomAttributes(AttributeSet attrs) {
-                TypedArray typeArray = mContext.obtainStyledAttributes(attrs, R.styleable.CircleImageView);
-                mBorderWidth = typeArray.getDimensionPixelSize(R.styleable.CircleImageView_border_size, 0);
-                mBordeColor = typeArray.getColor(R.styleable.CircleImageView_border_color, defaultColor);
-                typeArray.recycle();
-            }
-
-            int radiusNomal = (getDefalutHeight < getDefalutHeight ? getDefalutWidth : getDefalutWidth) / 2;
-            //去掉边框的宽度后，图片展示的半径
-            int radius = radiusNomal - mBorderWidth / 2;
-            //绘制边框的半径
-            int radiusBorder = radius;
-
-
-            /**
-             * 边缘画圆
-             */
-            private void drawCircleBorder(Canvas canvas, int radius, int color) {
-                Paint paint = new Paint();
+      private void setCustomAttributes(AttributeSet attrs) {
+          TypedArray typeArray = mContext.obtainStyledAttributes(attrs, R.styleable.CircleImageView);
+          mBorderWidth = typeArray.getDimensionPixelSize(R.styleable.CircleImageView_border_size, 0);
+          mBordeColor = typeArray.getColor(R.styleable.CircleImageView_border_color,defaultColor);
+          typeArray.recycle();
+          int radiusNomal = (getDefalutWidth < getDefalutHeight ? getDefalutWidth : getDefalutHeight) / 2;
+          //去掉边框的宽度后，图片展示的半径
+          int radius = radiusNomal - mBorderWidth/2;
+          //绘制边框的半径
+          int radiusBorder = radius;
+          Canvas canvas = new Canvas();
+          drawCircleBorder(canvas,radiusBorder,mBordeColor);
+      }
+    /**
+     * 边缘画圆
+     */
+    private void drawCircleBorder(Canvas canvas, int radius, int color) {
+        Paint paint = new Paint();
             /* 去锯齿 */
-                paint.setAntiAlias(true);
-                paint.setFilterBitmap(true);
-                paint.setDither(true);
-                paint.setColor(color);
+        paint.setAntiAlias(true);
+        paint.setFilterBitmap(true);
+        paint.setDither(true);
+        paint.setColor(color);
             /* 设置paint的　style　为STROKE：空心 */
-                paint.setStyle(Paint.Style.STROKE);
+        paint.setStyle(Paint.Style.STROKE);
             /* 设置paint的外框宽度 */
-                paint.setStrokeWidth(mBorderWidth);
-                canvas.drawCircle(getDefalutWidth / 2, getDefalutHeight / 2, radius, paint);
-            }
-        }
+        paint.setStrokeWidth(mBorderWidth);
+        canvas.drawCircle(getDefalutWidth / 2, getDefalutWidth / 2, radius, paint);
+    }
+}
